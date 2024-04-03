@@ -26,7 +26,7 @@ public class Expense {
     @NotEmpty(message = "Name of expense can't be empty.")
     private String name;
 
-    private String categoryId;
+    private Long categoryId;
 
     @Min(1)
     private Double amount;

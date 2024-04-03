@@ -2,34 +2,39 @@ package com.vipinkumarx28.sboot.controllers;
 
 
 import com.vipinkumarx28.sboot.entities.Category;
+import com.vipinkumarx28.sboot.exceptions.CategoryExistsException;
+import com.vipinkumarx28.sboot.exceptions.CategoryNotFoundException;
 import com.vipinkumarx28.sboot.services.CategoryService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/category")
+@Slf4j
 public class CategoryController {
 
     @Autowired
     private CategoryService categoryService;
 
     @GetMapping
-    public List<Category> getCategoryByIdOrName(@RequestParam(required = false) Long id, @RequestParam(required = false) String name){
-
-        return null;
+    public ResponseEntity<?> getCategoryByIdOrName(@RequestParam(required = false) Long categoryId, @RequestParam(required = false) String name) throws CategoryNotFoundException {
+        return categoryService.getCategoryByIdOrName(categoryId, name);
     }
 
     @PostMapping
-    public String addNewCategory(@RequestBody Category category){
-
-
-        return null;
+    public ResponseEntity<?> addNewCategory(@RequestBody Category category) throws CategoryExistsException {
+        return categoryService.addCategory(category);
     }
 
     @DeleteMapping
-    public String deleteCategoryByIdOrName(@RequestParam Long Id, @RequestParam String name){
+    public ResponseEntity<?> deleteCategoryByIdOrName(@RequestParam Long categoryId, @RequestParam String name){
+        //return categoryService.deleteCategory(categoryId, name);
         return null;
     }
 
