@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.vipinkumarx28.sboot</groupId>
 	<artifactId>sboot</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<name>finance-tracker</name>
 	<description>Personal finance tracker springboot application</description>
 	<properties>
@@ -25,6 +25,11 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 
 		<dependency>

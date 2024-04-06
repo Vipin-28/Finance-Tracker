@@ -23,4 +23,15 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>("An error occurred: " + e.getMessage(), HttpStatus.NOT_FOUND);
     }
 
+
+    @ExceptionHandler(ExpenseExistsException.class)
+    public ResponseEntity<?> handleException(ExpenseExistsException e){
+        return new  ResponseEntity<>("An error occurred: " + e.getMessage(), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(ExpenseNotFoundException.class)
+    public ResponseEntity<?> handleException(ExpenseNotFoundException e){
+        return new ResponseEntity<>("An error occurred: " + e.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
 }

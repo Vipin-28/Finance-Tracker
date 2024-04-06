@@ -16,7 +16,7 @@ public class ExpenseStartConfigruation {
     CommandLineRunner commandLineRunnerExpenses(ExpenseRepository expenseRepository){
         return args -> {
             Expense rent = new Expense(
-                    1L, "Room Rent", 1L, 200.0, LocalDate.now().minusDays(1), "Room rent for current month"
+                    1L, "Room Rent", 1L, 10000.0, LocalDate.now().minusDays(1), "Room rent for current month"
             );
             expenseRepository.saveAll(
                     List.of(

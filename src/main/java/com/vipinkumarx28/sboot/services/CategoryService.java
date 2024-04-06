@@ -11,9 +11,11 @@ public interface CategoryService {
 
     public ResponseEntity<?> addCategory(Category category) throws CategoryExistsException;
 
+    public ResponseEntity<?> getCategoryByIdOrName(Long categoryId, String name) throws CategoryNotFoundException;
+
     public ResponseEntity<?> deleteCategoryById(Long categoryId) throws CategoryNotFoundException;
 
-    public ResponseEntity<?> deleteCategoryByName(String categoryName) throws CategoryNotFoundException;
+    public ResponseEntity<?> deleteCategoryByName(List<String> categoryNameList) throws CategoryNotFoundException;
 
-    public ResponseEntity<?> getCategoryByIdOrName(Long categoryId, String name) throws CategoryNotFoundException;
+    public ResponseEntity<?> updateCategory(String oldCategoryName, Category category) throws CategoryNotFoundException;
 }
