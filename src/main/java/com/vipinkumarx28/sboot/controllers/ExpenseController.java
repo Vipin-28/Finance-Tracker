@@ -28,8 +28,9 @@ public class ExpenseController {
     }
 
     @PostMapping
-    public ResponseEntity<?> addExpense(@RequestBody Expense expense) throws ExpenseExistsException {
-        return expenseService.addNewExpense(expense);
+    public ResponseEntity<?> addExpense(@RequestParam String categoryName, @RequestBody Expense expense) throws ExpenseExistsException {
+        System.out.println("hello 1234");
+        return expenseService.addNewExpense(categoryName, expense);
     }
 
     @DeleteMapping(path = "/{expenseId}")

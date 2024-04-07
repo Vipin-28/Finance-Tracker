@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 public interface ExpenseService {
     public ResponseEntity<?> getExpenseByIdOrName(Long expenseId, String name);
 
-    public ResponseEntity<?> addNewExpense(Expense expense) throws ExpenseExistsException;
+    public ResponseEntity<?> addNewExpense(String categoryName, Expense expense) throws ExpenseExistsException;
 
     public ResponseEntity<?> deleteExpenseById(Long expenseId) throws ExpenseNotFoundException;
 

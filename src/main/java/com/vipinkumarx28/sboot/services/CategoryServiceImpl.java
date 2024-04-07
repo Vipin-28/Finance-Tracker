@@ -83,7 +83,7 @@ public class CategoryServiceImpl implements CategoryService {
         for(String categoryName : categoryNameList) {
             Category _category = (Category) categoryRepository.findByName(categoryName).get();
             log.info("Deleted id by name: {}", categoryName);
-            categoryRepository.deleteById(_category.getId());
+            categoryRepository.deleteById(_category.getCategoryId());
         }
         return new ResponseEntity<>("All categories deleted successfully.", HttpStatus.OK);
     }

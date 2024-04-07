@@ -17,33 +17,39 @@ public class CategoryStartConfiguration {
             Category others = new Category(
                     1L,
                     "others",
-                    "default category"
+                    "default category",
+                    null
             );
 
             Category groceries = new Category(
                     2L,
                     "groceries",
-                    "You can add groceries here"
+                    "You can add groceries here",
+                    null
             );
             Category travel = new Category(
                     3L,
                     "travel",
-                    "You can add travel here"
+                    "You can add travel here",
+                    null
             );
             Category concerts = new Category(
                     4L,
                     "concerts",
-                    "You can add concerts here"
+                    "You can add concerts here",
+                    null
             );
             Category cinema = new Category(
                     5L,
                     "cinema",
-                    "You can add cinema here"
+                    "You can add cinema here",
+                    null
             );
             Category fitness = new Category(
                     6L,
                     "fitness",
-                    "You can add fitness here"
+                    "You can add fitness here",
+                    null
             );
             categoryRepository.saveAll(
                     List.of(
