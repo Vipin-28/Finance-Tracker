@@ -4,6 +4,8 @@ package com.vipinkumarx28.sboot.controllers;
 import com.vipinkumarx28.sboot.entities.Category;
 import com.vipinkumarx28.sboot.exceptions.CategoryExistsException;
 import com.vipinkumarx28.sboot.exceptions.CategoryNotFoundException;
+import com.vipinkumarx28.sboot.exceptions.UserDoesNotExists;
+import com.vipinkumarx28.sboot.exceptions.UserNameRequiredException;
 import com.vipinkumarx28.sboot.services.CategoryService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
@@ -28,23 +30,34 @@ public class CategoryController {
     private CategoryService categoryService;
 
     @GetMapping
-    public ResponseEntity<?> getCategoryByIdOrName(@RequestParam(required = false) Long categoryId, @RequestParam(required = false) String name) throws CategoryNotFoundException {
-        return categoryService.getCategoryByIdOrName(categoryId, name);
+    public ResponseEntity<?> getCategory(
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) String filterKey,
+            @RequestParam(required = false) String filterValue,
+            @RequestHeader(name="userId", required=true) Long userId) throws CategoryNotFoundException, UserNameRequiredException {
+        return categoryService.getCategory(userId, categoryId, filterKey, filterValue);
     }
 
     @PostMapping
-    public ResponseEntity<?> addNewCategory(@RequestBody @Valid Category category) throws CategoryExistsException {
-        return categoryService.addCategory(category);
+    public ResponseEntity<?> addNewCategory(
+            @RequestHeader Long userId,
+            @RequestBody @Valid Category category) throws CategoryExistsException, UserNameRequiredException {
+        return categoryService.addCategory(userId, category);
     }
 
     @PutMapping(path = "/{oldCategoryName}")
-    public ResponseEntity<?> updateCategory(@PathVariable @NotNull @NotEmpty String oldCategoryName, @RequestBody @Valid Category category) throws CategoryNotFoundException {
-        return categoryService.updateCategory(oldCategoryName, category);
+    public ResponseEntity<?> updateCategory(
+            @RequestHeader Long userId,
+            @PathVariable @NotNull @NotEmpty String oldCategoryName,
+            @RequestBody @Valid Category category) throws CategoryNotFoundException, UserNameRequiredException, UserDoesNotExists {
+        return categoryService.updateCategory(userId, oldCategoryName, category);
     }
 
     @DeleteMapping
-    public ResponseEntity<?> deleteCategoryByName(@RequestBody List<String> categoryList) throws CategoryNotFoundException {
-        return categoryService.deleteCategoryByName(categoryList);
+    public ResponseEntity<?> deleteCategoryByName(
+            @RequestHeader Long userId,
+            @RequestBody List<String> categoryList) throws CategoryNotFoundException, UserNameRequiredException {
+        return categoryService.deleteCategoryByName(userId, categoryList);
     }
 
     @DeleteMapping(path = "/{categoryId}")

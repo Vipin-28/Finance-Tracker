@@ -33,12 +33,55 @@ public class Category {
 
     @NotEmpty(message = "Category name can't be empty")
     @Schema(description = "used to give name to category")
-    String name;
+    String categoryName;
 
     @Size(max=500)
     String description;
 
-    //@OneToMany(mappedBy = "category", cascade = CascadeType.ALL) // One category can have many expenses
-    @ElementCollection //since I want to maintain only the expense Ids
-    List<Long> expenseIds;
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL) // Many expenses belong to one category
+    @JoinColumn(name = "FK_USER_ID", nullable = false) // Foreign key column in Expense table
+    private User user; // writing way is this but storing the id only
+
+    public Category(String categoryName, String description, User user) {
+        this.categoryName = categoryName;
+        this.description = description;
+        this.user = user;
+    }
+
+    public Category() {
+    	super();
+    }
+	public Long getCategoryId() {
+		return categoryId;
+	}
+
+	public void setCategoryId(Long categoryId) {
+		this.categoryId = categoryId;
+	}
+
+	public String getCategoryName() {
+		return categoryName;
+	}
+
+	public void setCategoryName(String categoryName) {
+		this.categoryName = categoryName;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public User getUser() {
+		return user;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
+	}
+    
+    
 }
