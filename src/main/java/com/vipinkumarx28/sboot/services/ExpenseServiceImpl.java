@@ -1,21 +1,31 @@
 package com.vipinkumarx28.sboot.services;
 
-import com.vipinkumarx28.sboot.entities.Expense;
-import com.vipinkumarx28.sboot.exceptions.ExpenseExistsException;
-import com.vipinkumarx28.sboot.exceptions.ExpenseNotFoundException;
-import com.vipinkumarx28.sboot.repository.ExpenseRepository;
-import jakarta.transaction.Transactional;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.format.DateTimeParseException;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import com.vipinkumarx28.sboot.entities.Category;
+import com.vipinkumarx28.sboot.entities.Expense;
+import com.vipinkumarx28.sboot.entities.User;
+import com.vipinkumarx28.sboot.exceptions.CategoryNotFoundException;
+import com.vipinkumarx28.sboot.exceptions.ExpenseExistsException;
+import com.vipinkumarx28.sboot.exceptions.ExpenseNotFoundException;
+import com.vipinkumarx28.sboot.exceptions.UserDoesNotExists;
+import com.vipinkumarx28.sboot.models.GeneralResponse;
+import com.vipinkumarx28.sboot.repository.CategoryRepository;
+import com.vipinkumarx28.sboot.repository.ExpenseRepository;
+import com.vipinkumarx28.sboot.repository.UserRepository;
+
+import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
 
 @Service
@@ -25,36 +35,63 @@ public class ExpenseServiceImpl implements ExpenseService {
     @Autowired
     private ExpenseRepository expenseRepository;
 
-    @Override
-    public ResponseEntity<?> getExpenseByIdOrName(Long expenseId, String name) {
+    @Autowired
+    private CategoryRepository categoryRepository; //for checking the category exists or not
 
-        if (Objects.isNull(expenseId) && Objects.isNull(name)) {
-            List<Expense> expenseList = expenseRepository.findAll();
-            return new ResponseEntity<>(expenseList, HttpStatus.OK);
-        } else if (Objects.nonNull(expenseId)) {
-            Expense expense = expenseRepository.findById(expenseId).get();
-            if (Objects.nonNull(expense))
-                return new ResponseEntity<>(expense, HttpStatus.OK);
-        } else {
-            Expense expense = expenseRepository.findExpenseByName(name).get();
-            if (Objects.nonNull(expense))
-                return new ResponseEntity<>(expense, HttpStatus.OK);
+    @Autowired
+    private UserRepository userRepository;
+
+    @Override
+    public ResponseEntity<?> getExpense(String userName, String categoryName, String expenseName) throws Exception {
+        User user = userRepository.findByUserName(userName).get(); // always provided
+        if (Objects.isNull(user)) {
+            throw new UserDoesNotExists("User with given userName doesn't exist");
         }
-        return new ResponseEntity<>("Expense not found in db.", HttpStatus.NOT_FOUND);
+
+        Category category = null;
+        if (Objects.nonNull(categoryName)) {
+            category = categoryRepository.findByUserAndCategoryName(user, categoryName).get();
+        }
+        List<Expense> expenseList = null;
+        if (Objects.isNull(categoryName) && Objects.isNull(expenseName)) {// only user
+            expenseList = expenseRepository.findByUserId(user.getUserId()).get();
+        } else if (Objects.isNull(expenseName)) {// user + category
+            expenseList = expenseRepository.findAllByUserAndCategory(user, category).get();
+        } else {// user + expenseName
+            expenseList = expenseRepository.findAllByUserAndExpenseName(user, expenseName).get();
+        }
+
+        return new ResponseEntity<>(new GeneralResponse(expenseList), HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<?> addNewExpense(Expense expense) throws ExpenseExistsException {
-        Optional<Expense> _expense = expenseRepository.findExpenseByName(expense.getName());
-        if (_expense.isPresent()) {
-            log.error("Expense with give details already exists in db.");
-            throw new ExpenseExistsException("Expense already exists");
-        }
+    public ResponseEntity<?> getExpenseById(Long expenseId) {
+        Expense expense = expenseRepository.findById(expenseId).get();
+        return new ResponseEntity<>(expense, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<?> addNewExpense(String userName, String categoryName, Expense expense) throws
+            ExpenseExistsException {
         try {
+            User user = userRepository.findByUserName(userName).get();
+            if (Objects.isNull(user)) {
+                throw new UserDoesNotExists("Category provided with expense doesn't exist.");
+            }
+
+            Category category = (Category) categoryRepository.findByCategoryName(categoryName).get();
+            if (Objects.isNull(category)) {
+                throw new CategoryNotFoundException("Category provided with expense doesn't exist.");
+            }
+            expense.setUser(user);
+            expense.setCategory(category);
+            expense.setCreationDate(LocalDate.now());
             expenseRepository.save(expense);
-        } catch (DateTimeParseException e) {
-            throw new ResponseStatusException(
-                    HttpStatus.INTERNAL_SERVER_ERROR, "Invalid date format, use YYYY-MM-DD format", e);
+        } catch (CategoryNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (Exception e) {
+        	System.out.println("An error occurred while processing the request: "+ e);
+            throw new RuntimeException("An error occurred while processing the request", e);
         }
         return new ResponseEntity<>("Expense saved successfully...", HttpStatus.CREATED);
     }
@@ -63,10 +100,10 @@ public class ExpenseServiceImpl implements ExpenseService {
     public ResponseEntity<?> deleteExpenseById(Long expenseId) throws ExpenseNotFoundException {
         Optional<Expense> _expense = expenseRepository.findById(expenseId);
         if (!_expense.isPresent()) {
-            log.error("Expense with give id: {} doesn't exist in db.", expenseId);
+        	System.out.println("Expense with give id: {} doesn't exist in db."+ expenseId);
             throw new ExpenseNotFoundException("Expense with give id not found in db.");
         }
-        log.info("Deleting expense with id: {}", expenseId);
+        System.out.println("Deleting expense with id: {}"+ expenseId);
         expenseRepository.deleteById(expenseId);
         return new ResponseEntity<>("Expense deleted successfully.", HttpStatus.OK);
     }
@@ -76,18 +113,18 @@ public class ExpenseServiceImpl implements ExpenseService {
     public ResponseEntity<?> updateExpenseById(Long oldExpenseId, Expense expense) throws ExpenseNotFoundException {
         Optional<Expense> _expense = expenseRepository.findById(oldExpenseId);
         if (!_expense.isPresent()) {
-            log.error("Expense with give id: {} doesn't exist in db.", oldExpenseId);
+        	System.out.println("Expense with give id: " + oldExpenseId +"doesn't exist in db.");
             throw new ExpenseNotFoundException("Expense with give id not found in db.");
         }
-        log.info("Updating expense with id: {}", oldExpenseId);
-        _expense.get().setName(expense.getName());
+        System.out.println("Updating expense with id: {}"+ oldExpenseId);
+        _expense.get().setExpenseName(expense.getExpenseName());
         _expense.get().setAmount(expense.getAmount());
-        _expense.get().setCategoryId(expense.getCategoryId());
+//        _expense.get().setCategory(expense.getCategory());
         _expense.get().setComments(expense.getComments());
         _expense.get().setCreationDate(expense.getCreationDate());
         try {
             Expense updatedExpense = expenseRepository.save(_expense.get());
-        }catch (DateTimeParseException e) {
+        } catch (DateTimeParseException e) {
             throw new ResponseStatusException(
                     HttpStatus.INTERNAL_SERVER_ERROR, "Invalid date format, use YYYY-MM-DD format", e);
         }

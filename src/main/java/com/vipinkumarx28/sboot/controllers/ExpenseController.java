@@ -3,6 +3,7 @@ package com.vipinkumarx28.sboot.controllers;
 import com.vipinkumarx28.sboot.entities.Expense;
 import com.vipinkumarx28.sboot.exceptions.ExpenseExistsException;
 import com.vipinkumarx28.sboot.exceptions.ExpenseNotFoundException;
+import com.vipinkumarx28.sboot.exceptions.UserDoesNotExists;
 import com.vipinkumarx28.sboot.services.ExpenseService;
 import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,13 +24,22 @@ public class ExpenseController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getExpenseByIdOrName(@RequestParam(required = false) Long expenseId, @RequestParam(required = false) String name){
-        return expenseService.getExpenseByIdOrName(expenseId, name);
+    public ResponseEntity<?> getExpenseByIdOrName(@RequestHeader String userName,
+                                                  @RequestParam(required = false) String categoryName,
+                                                  @RequestParam(required = false) String name) throws Exception {
+        return expenseService.getExpense(userName, categoryName, name);
+    }
+
+    @GetMapping("/{expenseId}")
+    public ResponseEntity<?> getExpenseById(@PathVariable Long expenseId){
+        return expenseService.getExpenseById(expenseId);
     }
 
     @PostMapping
-    public ResponseEntity<?> addExpense(@RequestBody Expense expense) throws ExpenseExistsException {
-        return expenseService.addNewExpense(expense);
+    public ResponseEntity<?> addExpense(@RequestHeader String userName,
+                                        @RequestParam String categoryName,
+                                        @RequestBody Expense expense) throws ExpenseExistsException {
+        return expenseService.addNewExpense(userName, categoryName, expense);
     }
 
     @DeleteMapping(path = "/{expenseId}")
